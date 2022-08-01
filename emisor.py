@@ -2,11 +2,9 @@
 #Redes
 #Diego Crespo 19541
 #Juan Pablo Pineda 19087
-from audioop import add
-from email import message
-from operator import index
 import socket
 from random import randint
+import pickle
 
 HOST = "127.0.0.1"  
 PORT = 65432      
@@ -19,13 +17,15 @@ def addNoise(message):
     #agregar el ruido
     noiseArray = []
     for j in bitlist:
-        odds = randint(1,10)
+        odds = randint(1,100)
         if(odds == 1):
             if(j == '1'):
                 j  = 0
                 noiseArray.append(j)
             elif(j == '0'):
                 j = 1
+                noiseArray.append(j)
+            else:
                 noiseArray.append(j)
         else:
             noiseArray.append(j)
@@ -39,4 +39,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         userMessage = input("Ingrese su mensaje: ")
         finalMessage = addNoise(userMessage)
-        s.sendall(bytes(finalMessage, 'ASCII'))
+        s.sendall(pickle.dumps(finalMessage))
