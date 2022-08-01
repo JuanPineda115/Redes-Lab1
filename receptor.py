@@ -17,6 +17,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         while True: 
             data = conn.recv(1024)
             if not data:
-                break   
+                break
+            
             print(f"Recibido: {data}")
             conn.sendall(data)
