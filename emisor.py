@@ -2,31 +2,17 @@
 #Redes
 #Diego Crespo 19541
 #Juan Pablo Pineda 19087
-import socket, pickle, bitarray
+import socket, pickle
+from bitarray import *
+from noiseLayer import *
 from random import randint, seed
 
 HOST = "127.0.0.1"  
 PORT = 65431      
 
-#capa de ruido (client):
-#Añade ruido al mensaje del usuario
-# y Serializa el mensaje con Pickle para ser enviado
-def addNoise(message):
-    bitlist = bitarray.bitarray()
-    bitlist.frombytes(message.encode('utf-8'))
-    #agregar el ruido
-    for j in bitlist:
-        seed(bytearray(message, 'utf-8'))
-        #115 es el numero favorito de Pineda y siempre busca referenciarlo
-        odds = randint(15,115)
-        #probabilidad de 1% de realizar un cambio de bit
-        if(odds == 115):
-            if(j == 1):
-                bitlist[bitlist.index(j)]  = 0
-            elif(j == 0):
-                bitlist[bitlist.index(j)] = 1
-    bitlist = pickle.dumps(bitlist)
-    return bitlist
+
+
+key = "1101"
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -35,6 +21,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     #ciclo while para enviar todos los mensajes sin ejecutar varias veces
     while True:
         userMessage = input("Ingrese su mensaje: ")
-        finalMessage = addNoise(userMessage)
-        #serializamos el mensaje con pickle al enviarlo
+        processMessage = addNoise(userMessage)
+        noisedMessage = bitlist_to_s(processMessage)
+        finalMessage = encodeData(processMessage.tobytes().decode('utf-8'), key)
+        print(finalMessage)
         s.sendall(finalMessage)
