@@ -2,32 +2,32 @@
 #Redes
 #Diego Crespo 19541
 #Juan Pablo Pineda 19087
-import socket
-import random
+import socket, pickle, bitarray
+from random import randint, seed
 
 HOST = "127.0.0.1"  
-PORT = 65432      
+PORT = 65431      
 
+#capa de ruido (client):
+#Añade ruido al mensaje del usuario
+# y Serializa el mensaje con Pickle para ser enviado
 def addNoise(message):
-    #primero hacemos encoding a ASCII
-    bytesMessage = bytearray(message, 'ASCII')
-    for j in bytesMessage:
-        #probabilidades del 10% de que la letra sea alterada
-        odds = random.randint(1,10)
-        if(odds == 1):
-            #Si el codigo ascii es muy alto se le restara un offset para que no se pase del limite
-            if(j >= 93):
-                #offset random
-                offset = random.randint(1, 28)
-                #aplicamos el offset
-                bytesMessage[bytesMessage.index(j)] -= offset
-            #si el codigo ascii de la letra es muy bajo, se le sumara para que no se quede un numero negativo o 0
-            elif(j < 93):
-                #offset random
-                offset = random.randint(1, 28)
-                #aplicamos el offset
-                bytesMessage[bytesMessage.index(j)] += offset
-    return bytesMessage
+    bitlist = bitarray.bitarray()
+    bitlist.frombytes(message.encode('utf-8'))
+    #agregar el ruido
+    for j in bitlist:
+        seed(bytearray(message, 'utf-8'))
+        #115 es el numero favorito de Pineda y siempre busca referenciarlo
+        odds = randint(15,115)
+        #probabilidad de 1% de realizar un cambio de bit
+        if(odds == 115):
+            if(j == 1):
+                bitlist[bitlist.index(j)]  = 0
+            elif(j == 0):
+                bitlist[bitlist.index(j)] = 1
+    bitlist = pickle.dumps(bitlist)
+    return bitlist
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     #conexion del socket
@@ -36,4 +36,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         userMessage = input("Ingrese su mensaje: ")
         finalMessage = addNoise(userMessage)
+        #serializamos el mensaje con pickle al enviarlo
         s.sendall(finalMessage)

@@ -2,18 +2,21 @@
 #Redes
 #Diego Crespo 19541
 #Juan Pablo Pineda 19087
-import socket
+import socket, pickle, bitarray
 
 
 HOST = "127.0.0.1" 
-PORT = 65432       
+PORT = 65431
 
-def BinarytoString(binary):
-    binary_int = int(binary,2)
-    byte_number = binary_int.bit_length() + 7 // 8
-    binary_array = binary_int.to_bytes(byte_number, "big")
-    ascii_text = binary_array.decode()
-    return ascii_text;
+#capa de ruido (host):
+#Recibe el dato crudo y lo carga con pickle
+# Limpia el mensaje en caso de ser interrumpido por ruido.
+
+def supressNoise(message):
+    #Carga el mensaje con pickle y lo pasa a bytes
+    received = pickle.loads(message).tobytes()
+    #TODO Limpieza del mensaje
+    return received
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -21,10 +24,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.listen()
     conn, addr = s.accept()
     with conn:
-        print(f"Conexion Entrante del puerto(proceso) {addr}")
+        print(f"{addr} Se ha conectado")
         while True: 
             data = conn.recv(1024)
             if not data:
                 break
-            print(f"Recibido: {data}")
+            #extraemos el mensaje con pickle
+            received = supressNoise(data)
+            #lo pasamos a bytes para mostrarlo adecuadamente
+            print(f"{addr[1]} dice: {received}")
             conn.sendall(data)
