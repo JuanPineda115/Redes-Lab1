@@ -4,14 +4,12 @@
 #Juan Pablo Pineda 19087
 import socket, pickle, bitarray
 from noiseLayer import *
+from Hamming import *
+
 
 
 HOST = "127.0.0.1" 
 PORT = 65431
-
-
-
-
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -24,8 +22,16 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             data = conn.recv(1024)
             if not data:
                 break
-            #extraemos el mensaje con pickle
-            received = supressNoise(data)
-            #lo pasamos a bytes para mostrarlo adecuadamente
-            print(f"{addr[1]} dice: {received}")
-            conn.sendall(data)
+            #captura de datos
+            package = pickle.loads(data)
+            received = package[0].decode('utf-8')
+            #hamming
+            x = len(received)
+            r = package[1]
+            err = detectError(received, r)
+            if (received[-1]=='0'):
+                print(received)
+                print("No existe un error")
+            else:
+                print(received)
+                print("Existe un error")
